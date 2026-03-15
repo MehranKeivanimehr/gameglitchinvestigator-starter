@@ -1,4 +1,4 @@
-from logic_utils import check_guess
+from logic_utils import check_guess, parse_guess
 
 def test_winning_guess():
     # If the secret is 50 and guess is 50, it should be a win
@@ -96,3 +96,39 @@ def test_check_guess_requires_integer_secret():
     assert outcome_int == "Too Low", (
         "check_guess(9, 10) must use numeric comparison and return Too Low"
     )
+
+
+# --- Challenge 1 edge cases: input handling and guess evaluation ---
+
+def test_parse_guess_whitespace_only():
+    # Edge case 1: whitespace-only input ("   ") passes the "" check but is not a number.
+    # parse_guess must reject it gracefully with ok=False and a non-None error message.
+    # In app.py, attempts are incremented before parse_guess is called, so this input
+    # already costs an attempt — the test confirms at least the error is handled, not crashed.
+    ok, value, err = parse_guess("   ")
+    assert ok is False, "Whitespace-only input should not parse as a valid guess"
+    assert value is None
+    assert err is not None, "An error message should be returned for whitespace input"
+
+def test_parse_guess_out_of_range_is_accepted():
+    # Edge case 2: a number outside the difficulty range (e.g., 150 on Normal 1-50)
+    # is technically a valid integer, so parse_guess returns ok=True.
+    # check_guess then correctly says "Too High" — no crash, sensible result.
+    # This test documents the current behavior: range validation is not enforced.
+    ok, value, _ = parse_guess("150")
+    assert ok is True, "parse_guess should accept any integer, including out-of-range"
+    assert value == 150
+    outcome, message = check_guess(150, 50)
+    assert outcome == "Too High"
+    assert "LOWER" in message
+
+def test_parse_guess_decimal_truncates_to_integer():
+    # Edge case 3: a decimal input like "42.9" is parsed via int(float(raw)),
+    # which truncates (not rounds) to 42. If the secret is 42, this wins.
+    # The test confirms the truncation behavior is consistent and produces no crash.
+    ok, value, _ = parse_guess("42.9")
+    assert ok is True
+    assert value == 42, f"Expected 42 after truncating 42.9, got {value}"
+    # Confirm that this truncated value wins against a secret of 42
+    outcome, _ = check_guess(42, 42)
+    assert outcome == "Win"

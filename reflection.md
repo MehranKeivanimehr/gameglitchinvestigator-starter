@@ -50,14 +50,31 @@ Yes. AI helped me design the regression test by suggesting a simple pytest case 
 ## 4. What did you learn about Streamlit and state?
 
 - In your own words, explain why the secret number kept changing in the original app.
+
+Every time you clicked a button, Streamlit re-ran the entire app.py script from top to bottom. The original code had secret = random.randint(low, high) at the top level with no guard, so it picked a brand new random number on every single rerun
+
 - How would you explain Streamlit "reruns" and session state to a friend who has never used Streamlit?
+
+Imagine your app is a whiteboard that gets completely erased and redrawn every time someone clicks anything. That's a Streamlit rerun. session_state is a sticky note you tape to the side of the whiteboard — it survives the erase. Anything you want to remember between clicks has to live on that sticky note, not on the whiteboard itself.
+
 - What change did you make that finally gave the game a stable secret number?
 
+Wrapping the secret in a "secret" not in st.session_state guard:
+
+
+if "secret" not in st.session_state:
+    st.session_state.secret = random.randint(low, high)
 ---
 
 ## 5. Looking ahead: your developer habits
 
 - What is one habit or strategy from this project that you want to reuse in future labs or projects?
   - This could be a testing habit, a prompting strategy, or a way you used Git.
+One habit I want to reuse is keeping AI prompts narrow and specific, then reviewing the diff before accepting any change. debugging will be safer and becomes much easier to verify what actually changed.
+
 - What is one thing you would do differently next time you work with AI on a coding task?
+
+I will use AI to make the regression test and consider the edge cases as well. 
 - In one or two sentences, describe how this project changed the way you think about AI generated code.
+
+You can use AI for these kinds of works and it can accelerate and enhance your performance, but it is very important to be carefull about what it does in order to make no mistakes. Also, you need to use narrow and specific prompts to adrtess the founded bugs correctly. 
